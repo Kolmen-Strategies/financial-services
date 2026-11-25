@@ -1,5 +1,7 @@
 # Earnings Reviewer — managed-agent template
 
+> Verification status (2026-11-25): this is a workflow specification/template. Manifest references passed structural checks; no business-output or hosted-agent acceptance run was performed. Linux deployment dry runs are blocked by the deployment script's GNU `mktemp` incompatibility. Worker schemas/permission descriptions below express intended requirements: `deploy-managed-agent.sh` does not currently wire `validate.py` into worker responses. See the [repository feature audit](../../README.md#feature-verification--2026-11-25) and [roadmap](../../ROADMAP.md).
+
 ## Overview
 
 Earnings call + filings → model update → note draft. Same source as the [`earnings-reviewer`](../../plugins/agent-plugins/earnings-reviewer) Cowork plugin — this directory is the Managed Agent cookbook for `POST /v1/agents`.
@@ -26,6 +28,6 @@ Transcripts and press releases are untrusted. Three-tier isolation:
 | `model-updater` / Orchestrator | No | `Read`, `Grep`, `Glob`, `Agent` | FactSet, Daloopa (read-only) |
 | **`note-writer`** (Write-holder) | No | `Read`, `Write`, `Edit` | None |
 
-`transcript-reader` returns length-capped, schema-validated JSON. `note-writer` produces `./out/note-<ticker>.docx` and the updated model at `./out/model-<ticker>.xlsx`.
+`transcript-reader` is specified to return length-capped, schema-valid JSON; runtime validation is not wired into deployment. `note-writer` produces `./out/note-<ticker>.docx` and the updated model at `./out/model-<ticker>.xlsx`.
 
 **Handoff:** to rebuild a DCF after an earnings-driven thesis change, emit a `handoff_request` for `model-builder`; `scripts/orchestrate.py` routes it as a new steering event.

@@ -1,5 +1,7 @@
 # GL Reconciler — managed-agent template
 
+> Verification status (2026-11-25): this is a workflow specification/template. Manifest references passed structural checks; no business-output or hosted-agent acceptance run was performed. Linux deployment dry runs are blocked by the deployment script's GNU `mktemp` incompatibility. Worker schemas/permission descriptions below express intended requirements: `deploy-managed-agent.sh` does not currently wire `validate.py` into worker responses. See the [repository feature audit](../../README.md#feature-verification--2026-11-25) and [roadmap](../../ROADMAP.md).
+
 ## Overview
 
 Finds breaks between general ledger and subledger for a trade date and set of asset classes, traces root cause, and produces an exception report for controller sign-off.
@@ -29,7 +31,7 @@ This agent reads counterparty/custodian statements — documents authored by out
 | **Orchestrator** | No | `Read`, `Grep`, `Glob`, `Agent` | Read-only GL + subledger MCPs |
 | **`resolver`** (Write-holder) | No | `Read`, `Write`, `Edit` | None |
 
-The `reader` returns length-capped, schema-validated JSON only (validated by `scripts/validate.py`). The `critic` independently re-verifies each break against trusted sources before the orchestrator hands the set to `resolver`. The `resolver` writes the exception report to `./out/`; it never opens an outsider file.
+The `reader` is specified to return length-capped, schema-valid JSON; runtime validation with `scripts/validate.py` still needs integration. The `critic` independently re-verifies each break against trusted sources before the orchestrator hands the set to `resolver`. The `resolver` writes the exception report to `./out/`; it never opens an outsider file.
 
 **Handoff:** to feed verified breaks into Month-End Closer, the orchestrator emits a `handoff_request` for `month-end-closer` in its final output; `scripts/orchestrate.py` (or your Temporal/Airflow worker) routes it as a new steering event. See the script for the allowlist + payload-validation pattern.
 

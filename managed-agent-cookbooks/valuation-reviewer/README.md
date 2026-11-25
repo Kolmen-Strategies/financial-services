@@ -1,5 +1,7 @@
 # Valuation Reviewer — managed-agent template
 
+> Verification status (2026-11-25): this is a workflow specification/template. Manifest references passed structural checks; no business-output or hosted-agent acceptance run was performed. Linux deployment dry runs are blocked by the deployment script's GNU `mktemp` incompatibility. Worker schemas/permission descriptions below express intended requirements: `deploy-managed-agent.sh` does not currently wire `validate.py` into worker responses. See the [repository feature audit](../../README.md#feature-verification--2026-11-25) and [roadmap](../../ROADMAP.md).
+
 ## Overview
 
 Ingests GP packages, runs valuation template, stages LP reporting. Same source as the [`valuation-reviewer`](../../plugins/agent-plugins/valuation-reviewer) Cowork plugin — this directory is the Managed Agent cookbook for `POST /v1/agents`.
@@ -26,7 +28,7 @@ GP-provided valuation packages are untrusted. Three-tier isolation:
 | `valuation-runner` / Orchestrator | No | `Read`, `Grep`, `Glob`, `Agent` | portfolio (read-only) |
 | **`publisher`** (Write-holder) | No | `Read`, `Write`, `Edit` | None |
 
-`package-reader` returns length-capped, schema-validated JSON. `publisher` produces `./out/lp-pack-<fund>.xlsx`.
+`package-reader` is specified to return length-capped, schema-valid JSON; runtime validation is not wired into deployment. `publisher` produces `./out/lp-pack-<fund>.xlsx`.
 
 **Handoff:** to feed flagged portcos into GL Reconciler, emit a `handoff_request` for `gl-reconciler`; `scripts/orchestrate.py` routes it.
 
