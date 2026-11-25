@@ -1,0 +1,17 @@
+# Financial-services roadmap
+
+From README, cookbook, script and manifest review on 2026-11-25 (`57772c3`). These are feature/validation requirements. They do not claim working business outputs. [README.md](README.md) records current template inventory and check results.
+
+| Priority | Requirement | Source evidence / current gap | Completion criteria |
+|---|---|---|---|
+| P1 | Portable managed-agent deployment and dry-run validation | `scripts/deploy-managed-agent.sh` uses BSD-style `mktemp -t skillcache` (also `skill`); GNU mktemp rejects it. `test-cookbooks.sh` fails all ten templates on Linux | Use portable temp templates and run the original dry-run suite on Linux/macOS; validate all generated payloads before opt-in API deployment |
+| P1 | Worker schema enforcement promised by cookbook docs | Cookbook prose says reader JSON is schema validated; `deploy-managed-agent.sh` deletes `output_schema` without extracting it or calling `validate.py` | Persist/extract schemas and validate each worker response before it reaches the parent; prove invalid/oversized/adversarial outputs are rejected |
+| P1 | Safe, working handoffs between named workflows | `scripts/orchestrate.py` is a reference text-regex loop, not a production workflow engine | Structured events/tool calls, buffering, session creation/target ownership, retries, idempotency, audit trail and end-to-end handoff fixtures |
+| P2 | Business-output acceptance for every named agent | All ten workflows are prompt/skill bundles; structural checker does not verify models, memos, briefs, decks, reconciliations, statements or KYC decisions | Versioned input/output fixtures and human review criteria for each README workflow; verify financial arithmetic and citations, stage outputs for sign-off |
+| P2 | Plugin installation and all advertised commands | Marketplace paths resolve, but host installation and commands were not executed | Verify Cowork/Claude Code installation, command registration, skill loading and intended host tools; test each vertical's advertised commands |
+| P2 | Eleven working data connectors | Core `.mcp.json` declares endpoints; this repository does not contain their server implementations or demonstrate access | Opt-in provider-auth/tool discovery checks and representative licensed data requests; distinguish configured from verified providers |
+| P2 | Equivalent workflow behavior on both hosting surfaces | Shared prompts/skills do not prove Cowork and managed-agent output/permission equivalence | Compare outputs and tool/worker permissions on both surfaces, with explicit supported preview API/SDK versions |
+| P2 | Microsoft 365/cloud provisioning | Commands and manifest/bootstrap helpers exist; no tenant/cloud deployment was exercised. Outlook generator rejects AWS Bedrock options | Fixture-test XML transformation, URL/SSO routing and bootstrap auth; staging-tenant consent/Graph/add-in acceptance. Implement Outlook Bedrock routing if the broad cloud promise is retained |
+| P3 | Broader automated quality gates | `scripts/check.py` checks structure and shallow directory comparison, not all nested script behavior or output correctness | CI for structure, recursive skill-content parity, portable dry runs, script tests and workflow fixtures |
+
+No external services were provisioned or changed during this audit. Template security notes describe intended constraints; runtime enforcement needs its own tests.

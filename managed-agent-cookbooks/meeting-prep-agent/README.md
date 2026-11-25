@@ -1,5 +1,7 @@
 # Meeting Prep Agent — managed-agent template
 
+> Verification status (2026-11-25): this is a workflow specification/template. Manifest references passed structural checks; no business-output or hosted-agent acceptance run was performed. Linux deployment dry runs are blocked by the deployment script's GNU `mktemp` incompatibility. Worker schemas/permission descriptions below express intended requirements: `deploy-managed-agent.sh` does not currently wire `validate.py` into worker responses. See the [repository feature audit](../../README.md#feature-verification--2026-11-25) and [roadmap](../../ROADMAP.md).
+
 ## Overview
 
 Briefing pack before every client meeting. Same source as the [`meeting-prep-agent`](../../plugins/agent-plugins/meeting-prep-agent) Cowork plugin — this directory is the Managed Agent cookbook for `POST /v1/agents`.

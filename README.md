@@ -1,8 +1,37 @@
 # Claude for Financial Services
 
+Kolmen Strategies fork of [anthropics/claude-for-financial-services](https://github.com/anthropics/claude-for-financial-services). This repository provides **prompt/skill templates, plugin manifests, connector configuration and deployment/reference scripts**. A workflow description is not evidence that its business output has been generated or validated.
+
+## Feature verification — 2026-11-25
+
+Audited source: `57772c3`. All ten named agents have plugin directories and matching managed-agent cookbook manifests. Their outputs below are **prompt-defined workflows**, not deterministic, independently tested financial applications. Missing execution guarantees and validation gaps are tracked in [ROADMAP.md](ROADMAP.md).
+
+| Capability | Source / current availability | Test evidence |
+|---|---|---|
+| Pitch Agent | `plugins/agent-plugins/pitch-agent/`, `managed-agent-cookbooks/pitch-agent/`; instructions for comps, precedents, LBO and pitch decks | Manifest/reference checks passed; no model/deck output acceptance run |
+| Meeting Prep Agent | Matching `meeting-prep-agent` plugin and cookbook; briefing instructions | Structure checked; no calendar/client-data/briefing integration run |
+| Market Researcher | Matching `market-researcher` plugin and cookbook; sector/peer research instructions | Structure checked; sources and produced research not validated |
+| Earnings Reviewer | Matching `earnings-reviewer` plugin and cookbook; transcript/model/note instructions | Structure checked; no earnings/model numerical acceptance run |
+| Model Builder | Matching `model-builder` plugin and cookbook; financial-model skills and file-authoring helpers | Structure checked; no Excel/formula/DCF/LBO output acceptance run |
+| GL Reconciler | Matching `gl-reconciler` plugin and cookbook; break analysis and review routing | Structure checked; no ledger fixtures/end-to-end reconciliation run |
+| Month-End Closer | Matching `month-end-closer` plugin and cookbook; close/variance instructions | Structure checked; no accounting-system posting or close acceptance run |
+| Valuation Reviewer | Matching `valuation-reviewer` plugin and cookbook; valuation review/report staging | Structure checked; valuations and reporting outputs untested |
+| Statement Auditor | Matching `statement-auditor` plugin and cookbook; LP statement checks | Structure checked; no fixture statements or reconciliation outputs validated |
+| KYC Screener | Matching `kyc-screener` plugin and cookbook; document/rules review instructions | Structure checked; rules are agent instructions, not a separately tested compliance engine |
+| Seven vertical plugins plus LSEG/S&P partner plugins | `plugins/vertical-plugins/`, `plugins/partner-built/`; skills, commands, hooks and manifests | Manifest/reference and bundled-skill drift check passed; host installation and every command/skill output untested |
+| Eleven MCP provider configurations | `plugins/vertical-plugins/financial-analysis/.mcp.json`; endpoint declarations, not bundled provider servers | Names/count inspected; authentication, subscription access and provider tool calls untested. Other plugin `.mcp.json` files may be empty; install/configure the core connector plugin |
+| Managed-agent deployment | `scripts/deploy-managed-agent.sh`; resolves prompts/skills/workers and constructs API requests | **Blocked on this Linux host:** `mktemp -t skillcache` fails with “too few X's”. Cookbook dry-run suite fails before payload validation. No actual deployment attempted |
+| Worker-output schema validation | `scripts/validate.py` can validate a file against a schema | Standalone utility exists; deploy strips `output_schema` and does not invoke/extract it. Automatic worker-output enforcement is absent |
+| Cross-agent handoff reference loop | `scripts/orchestrate.py`; target allowlist and JSON-schema checks on parsed handoff text | Reference implementation only; no production session-routing, stream-fragment or authorization integration tests |
+| Microsoft 365 provisioning support | `claude-for-msft-365-install/commands/`, `scripts/build-manifest.mjs`, Python bootstrap example | Script syntax checked; no manifest-fetch/output, tenant consent, Graph update, cloud routing or add-in deployment verified. Outlook script explicitly rejects AWS Bedrock arguments |
+
+Checks run: `python3 scripts/check.py` → **80 files checked, 0 issues**; `bash scripts/test-cookbooks.sh` → **failed for all ten cookbooks**, traced to GNU `mktemp` portability in the deployment script. Bash/Python/Node syntax checks cover parsing only. The manifest check does not run the workflows, test arithmetic, invoke connectors, verify output quality or install plugins. No paid API calls, managed-agent deployments, Office tenant changes or external writes were made.
+
+Local structural checks require Python 3 plus PyYAML; deploy dry runs additionally require Bash and jq. `validate.py` requires `jsonschema`; the orchestration example imports `anthropic` and `jsonschema`. `build-manifest.mjs` uses Node's built-in fetch. See the roadmap before using the deploy command on Linux.
+
 Reference agents, skills, and data connectors for the financial-services workflows we see most — investment banking, equity research, private equity, and wealth management.
 
-Everything here is available **two ways from one source**: install it as a [Claude Cowork](https://claude.com/product/cowork) plugin, or deploy it through the [Claude Managed Agents API](https://docs.claude.com/en/api/managed-agents) behind your own workflow engine. Same system prompt, same skills — you choose where it runs.
+Templates here are packaged **two ways from one source**: install it as a [Claude Cowork](https://claude.com/product/cowork) plugin, or deploy it through the [Claude Managed Agents API](https://docs.claude.com/en/api/managed-agents) behind your own workflow engine. Same system prompt, same skills — you choose where it runs.
 
 > [!IMPORTANT]
 > Nothing in this repository constitutes investment, legal, tax, or accounting advice. These agents draft analyst work product — models, memos, research notes, reconciliations — for review by a qualified professional. They do not make investment recommendations, execute transactions, bind risk, post to a ledger, or approve onboarding; every output is staged for human sign-off. You are responsible for verifying outputs and for compliance with the laws and regulations that apply to your firm.
@@ -16,7 +45,7 @@ What's in the repo:
 
 Each agent is named for the workflow it runs. They're starting points: install the ones that match your work, then tune the prompts, skills, and connectors to how your firm does it.
 
-Each agent plugin is **self-contained** — it bundles the skills it uses, so installing the agent is all you need.
+Each agent plugin bundles the skills it uses. External data connectors, host capabilities, credentials and provider subscriptions still need configuration; the business workflows have not been acceptance-tested in this fork.
 
 | Function | Agent | What it does |
 |---|---|---|
@@ -31,7 +60,7 @@ Each agent plugin is **self-contained** — it bundles the skills it uses, so in
 | | **[Statement Auditor](./plugins/agent-plugins/statement-auditor)** | Audits LP statements before distribution |
 | **Operations & onboarding** | **[KYC Screener](./plugins/agent-plugins/kyc-screener)** | Parses onboarding docs, runs the rules engine, flags gaps |
 
-For Managed Agent deployment — `agent.yaml`, leaf-worker subagents, steering-event examples, and per-agent security notes — see **[managed-agent-cookbooks/](./managed-agent-cookbooks)**.
+For Managed Agent deployment templates — `agent.yaml`, leaf-worker subagents, steering-event examples, and per-agent security notes (which still require runtime enforcement) — see **[managed-agent-cookbooks/](./managed-agent-cookbooks)**.
 
 ## Repository Layout
 
@@ -96,7 +125,7 @@ Each template under [`managed-agent-cookbooks/`](./managed-agent-cookbooks) refe
 | **Connectors** | [MCP servers](https://modelcontextprotocol.io/) that wire Claude to your data — terminals, research platforms, document stores. | `plugins/vertical-plugins/financial-analysis/.mcp.json` |
 | **Managed-agent wrappers** | `agent.yaml` + depth-1 subagents + steering examples for headless deployment. | `managed-agent-cookbooks/<slug>/` |
 
-Everything is file-based — markdown and JSON, no build step.
+Plugin content is file-based Markdown/JSON/YAML. Executable Bash/Python/Node helpers also exist and have their own dependencies; there is no single repository-wide application build.
 
 ## Vertical Plugins
 
@@ -248,7 +277,7 @@ These are reference templates — they get better when you tune them to how your
 
 ## Contributing
 
-Everything here is markdown and YAML. Fork, edit, PR. For new content:
+Most workflow content is Markdown and YAML; scripts are executable code. Fork, edit, PR. For new content:
 
 - New skill → add it under `plugins/vertical-plugins/<vertical>/skills/`, then run `python3 scripts/sync-agent-skills.py` to propagate to any agent that bundles it.
 - New agent → `plugins/agent-plugins/<slug>/` (with `agents/<slug>.md` + `skills/`) and a matching `managed-agent-cookbooks/<slug>/`.
